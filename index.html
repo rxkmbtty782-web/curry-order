@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>カレー モバイルオーダー</title>
+  <style>
+    :root { --gap:12px; }
+    body { font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans JP", sans-serif;
+           padding:16px; max-width:560px; margin:0 auto; }
+    h1 { font-size:1.4rem; margin:.2rem 0 .6rem; }
+    fieldset { border:1px solid #ddd; border-radius:12px; padding:12px; margin:12px 0; }
+    legend { padding:0 6px; font-weight:700; }
+    .row { display:flex; gap:var(--gap); align-items:center; flex-wrap:wrap; }
+    label { display:block; margin:6px 0; }
+    input[type="number"], input[type="text"], select, textarea {
+      width:100%; padding:10px; border:1px solid #ccc; border-radius:8px; font-size:1rem;
+    }
+    .total { font-size:1.2rem; font-weight:700; text-align:right; margin:8px 0 0; }
+    .muted { color:#666; font-size:.9rem; }
+    .success { background:#e6ffed; border:1px solid #b7f5c4; padding:12px; border-radius:8px; }
+    .error { background:#ffecec; border:1px solid #ffc1c1; padding:12px; border-radius:8px; }
+    button { width:100%; padding:12px; border:none; border-radius:10px; font-size:1rem; background:#222; color:#fff; }
+    button[disabled] { opacity:.6; }
+    .radios label { display:inline-flex; align-items:center; gap:6px; margin-right:16px; }
+    .footer { color:#888; font-size:.85rem; text-align:center; margin-top:10px; }
+  </style>
+</head>
+<body>
+  <h1>カレー モバイルオーダー</h1>
+  <p class="muted">お支払いは店頭にてお願いします。送信後に注文番号が表示されます。</p>
+
+  <fieldset>
+    <legend>メニュー</legend>
+
+    <label>カレー</label>
+    <select id="curry" aria-label="カレーを選択">
+      <!-- 価格は全て600円固定。表示とサーバーの両方で再計算します。 -->
+      <option value="キーマカレー" data-price="600">キーマカレー（¥600）</option>
+      <option value="バターチキンカレー" data-price="600">バターチキンカレー（¥600）</option>
+      <option value="ビーフカレー" data-price="600">ビーフカレー（¥600）</option>
+    </select>
+
+    <label>ごはん</label>
+    <div class="row radios" role="radiogroup" aria-label="ごはんの種類">
+      <label><input type="radio" name="rice" value="白米" checked>白米</label>
+      <label><input type="radio" name="rice" value="玄米">玄米</label>
+    </div>
+
+    <label>数量</label>
+    <input id="qty" type="number" min="1" max="10" value="1" inputmode="numeric" />
+
+    <div class="total">合計：<span id="total">¥600</span></div>
+  </fieldset>
+
+  <fieldset>
+    <legend>お客様情報</legend>
+    <label>お名前（必須）
+      <input id="name" type="text" placeholder="例：山田太郎" required />
+    </label>
+    <label>備考（任意）
+      <textarea id="note" rows="3" placeholder="辛さの希望・アレルギー等があれば記入してください"></textarea>
+    </label>
+  </fieldset>
+
+  <div id="msg" aria-live="polite"></div>
+  <button id="submit">この内容で注文する</button>
+  <div class="footer">※ 通信状況により数秒かかる場合があります。送信中はボタンが無効になります。</div>
+
+<script>
+  // ▼▼ ここに GAS の本番 URL（/exec）を貼り付け ▼▼
+  const GAS_ENDPOINT = 'https://script.google.com/macros/s/AKfycbxiYTfTpdgr8JYRtYHAh9TUX7Q_N-uF1QnlWDflIpD1CVzKfOTiR5Dc_50WmfLMhiWqpg/exec';
+
+  const $ = (sel) => document.querySelector(sel);
+  const curry = $('#curry');
+  const qty   = $('#qty');
+  const total = $('#total');
+  const msg   = $('#msg');
+  const submit= $('#submit');
+
+  function getRice() {
+    const r = document.querySelector('input[name="rice"]:checked');
+    return r ? r.value : '白米';
+  }
+
+  function calcTotal() {
+    const price = Number(curry.selectedOptions[0].dataset.price || 600);
+    const q = Math.min(10, Math.max(1, Number(qty.value || 1)));
+    qty.value = q;
+    total.textContent = `¥${(price * q).toLocaleString()}`;
+    return price * q;
+  }
+
+  curry.addEventListener('change', calcTotal);
+  qty.addEventListener('input', calcTotal);
+  calcTotal();
+
+  function ui(loading) {
+    submit.disabled = !!loading;
+    submit.textContent = loading ? '送信中…' : 'この内容で注文する';
+  }
+
+  async function sendOrder() {
+    msg.innerHTML = '';
+    const name = $('#name').value.trim();
+    const note = $('#note').value.trim();
+
+    if (!name) { msg.innerHTML = '<div class="error">お名前を入力してください。</div>'; return; }
+
+    const payload = {
+      name,
+      curry: curry.value,     // 日本語のまま送信
+      rice: getRice(),        // 日本語のまま送信
+      quantity: Number(qty.value || 1),
+      note
+      // total は表示用のみ。サーバー側で600×数量を再計算・確定します。
+    };
+
+    try {
+      ui(true);
+      const res = await fetch(GAS_ENDPOINT, {
+        method: 'POST',
+        // ← プリフライト回避のため headers は付けない
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+      if (data && data.ok) {
+        msg.innerHTML = `<div class="success">
+          ありがとうございます。注文を受け付けました。<br>
+          <b>注文番号：${data.order_id}</b><br>
+          合計：¥${Number(data.total).toLocaleString()}<br>
+          店頭で番号とお名前をお伝えください。
+        </div>`;
+      } else {
+        throw new Error(data && data.error ? data.error : 'unknown error');
+      }
+    } catch (err) {
+      msg.innerHTML = `<div class="error">送信に失敗しました：${String(err.message || err)}</div>`;
+    } finally {
+      ui(false);
+    }
+  }
+
+  submit.addEventListener('click', sendOrder);
+</script>
+</body>
+</html>

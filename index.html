@@ -7,9 +7,8 @@
   <style>
     :root {
       /* 各入力欄の共通幅（カレー/数量/お名前/備考など） */
-      --control: 360px; /* 個々の入力欄幅 */
-      /* メニュー/お客様情報全体のボックス幅（fieldset枠） */
-      --fieldset: 480px;
+      --control: 360px;   /* 入力 UI 幅 */
+      --fieldset: 480px;  /* メニュー/お客様情報の枠幅 */
       --gap: 12px;
     }
 
@@ -116,7 +115,15 @@
       </div>
 
       <label for="qty">数量</label>
-      <input id="qty" class="ctrl" type="number" min="1" max="10" value="1" inputmode="numeric" />
+      <!-- ★ 数量はセレクト（1〜10）に変更：スマホでの誤操作を回避 -->
+      <select id="qty" class="ctrl" aria-label="数量">
+        <option value="1" selected>1</option>
+        <option value="2">2</option><option value="3">3</option>
+        <option value="4">4</option><option value="5">5</option>
+        <option value="6">6</option><option value="7">7</option>
+        <option value="8">8</option><option value="9">9</option>
+        <option value="10">10</option>
+      </select>
 
       <div class="total ctrl">合計：<span id="total">¥600</span></div>
     </fieldset>
@@ -128,7 +135,7 @@
       <input id="name" class="ctrl" type="text" placeholder="例：山田太郎" required />
 
       <label for="note">備考（任意）</label>
-      <textarea id="note" class="ctrl" rows="3" placeholder="アレルギー等があれば記入してください"></textarea>
+      <textarea id="note" class="ctrl" rows="3" placeholder="辛さの希望・アレルギー等があれば記入してください"></textarea>
     </fieldset>
 
     <div id="msg" class="msg" aria-live="polite"></div>
@@ -142,7 +149,7 @@
 
   const $ = (sel) => document.querySelector(sel);
   const curry = $('#curry');
-  const qty   = $('#qty');
+  const qty   = $('#qty');     // ← select に変更
   const total = $('#total');
   const msg   = $('#msg');
   const submit= $('#submit');
@@ -154,14 +161,13 @@
 
   function calcTotal() {
     const price = Number(curry.selectedOptions[0].dataset.price || 600);
-    const q = Math.min(10, Math.max(1, Number(qty.value || 1)));
-    qty.value = q;
+    const q = Math.min(10, Math.max(1, Number(qty.value || 1))); // select の値を数値化
     total.textContent = `¥${(price * q).toLocaleString()}`;
     return price * q;
   }
 
   curry.addEventListener('change', calcTotal);
-  qty.addEventListener('input', calcTotal);
+  qty.addEventListener('change', calcTotal); // ← input ではなく change を監視
   calcTotal();
 
   function ui(loading) {
@@ -183,7 +189,7 @@
       name,
       curry: curry.value,
       rice: getRice(),
-      quantity: Number(qty.value || 1),
+      quantity: Number(qty.value || 1), // ← select の値を送信
       note
     };
 
@@ -191,7 +197,7 @@
       ui(true);
       const res = await fetch(GAS_ENDPOINT, {
         method: 'POST',
-        body: JSON.stringify(payload)
+        body: JSON.stringify(payload) // headersは付けない（プリフライト回避）
       });
       const data = await res.json();
       if (data && data.ok) {

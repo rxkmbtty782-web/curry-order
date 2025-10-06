@@ -5,48 +5,89 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>カレー モバイルオーダー</title>
   <style>
-    :root { --gap:12px; --control: 360px; }
+    :root {
+      /* 入力要素の“共通幅”をここで一括管理（カレー/数量/お名前/備考 すべて同じ） */
+      --control: 320px;
+      --gap: 12px;
+    }
+    /* ページ全体を中央寄せ */
     body {
       font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans JP", sans-serif;
-      padding:16px; margin:0;
-      display:flex; min-height:100svh; align-items:flex-start; justify-content:center;
-      background:#fafafa;
+      padding: 16px;
+      margin: 0 auto;
+      max-width: 720px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      background: #fff;
     }
-    .wrap {
-      width:100%; max-width:720px; padding:8px 12px 28px;
-      display:flex; flex-direction:column; align-items:center;
-    }
-    h1 { font-size:1.4rem; margin:.4rem 0 .6rem; text-align:center; }
-    .muted { color:#666; font-size:.95rem; text-align:center; margin-bottom:4px; }
+    h1 { font-size: 1.4rem; margin: .2rem 0 .6rem; text-align: center; }
+    p.muted { color: #666; font-size: .95rem; text-align: center; margin: 0 0 8px; }
+
+    .wrap { width: 100%; display: flex; flex-direction: column; align-items: center; }
+
     fieldset {
-      width:min(100%, var(--control)); /* ← 中央の同じ幅で統一 */
-      border:1px solid #ddd; border-radius:12px; padding:14px; margin:12px 0;
-      background:#fff;
+      width: min(100%, 560px);
+      border: 1px solid #ddd;
+      border-radius: 12px;
+      padding: 12px;
+      margin: 12px 0;
+      background: #fff;
     }
-    legend { padding:0 6px; font-weight:700; }
-    label { display:block; margin:8px 0 6px; }
-    select, input[type="number"], input[type="text"], textarea {
-      width:100%; padding:10px; border:1px solid #ccc; border-radius:8px; font-size:1rem;
-      background:#fff;
+    legend { padding: 0 6px; font-weight: 700; }
+    label { display: block; margin: 8px 0 6px; }
+    .row { display: flex; gap: var(--gap); align-items: center; flex-wrap: wrap; }
+
+    /* ★ ここで“横幅を完全統一”。中央に配置し、PC/スマホで崩れにくく */
+    .ctrl {
+      width: var(--control);
+      max-width: 100%;
+      display: block;
+      margin-left: auto;
+      margin-right: auto;
     }
-    .radios { display:flex; flex-direction:column; gap:8px; }
-    .row { display:flex; gap:var(--gap); align-items:center; flex-wrap:wrap; }
-    .total {
-      width:min(100%, var(--control)); margin:8px auto 0;
-      font-size:1.2rem; font-weight:700; text-align:center; /* ← 中央揃え */
+    select.ctrl,
+    input.ctrl,
+    textarea.ctrl {
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 1rem;
+      background: #fff;
     }
-    .error, .success {
-      width:min(100%, var(--control)); margin:8px auto;
-      padding:12px; border-radius:8px;
+
+    .radios { display: flex; flex-direction: column; gap: 6px; }
+    .radios.ctrl { /* ラジオ群の親も同じ幅で中央 */
+      align-items: flex-start;
     }
-    .error  { background:#ffecec; border:1px solid #ffc1c1; }
-    .success{ background:#e6ffed; border:1px solid #b7f5c4; }
-    button {
-      width:min(100%, var(--control)); margin-top:6px;
-      padding:12px; border:none; border-radius:10px; font-size:1rem; background:#222; color:#fff;
+
+    .total.ctrl {
+      font-size: 1.2rem;
+      font-weight: 700;
+      text-align: right;
+      margin: 8px auto 0;
     }
-    button[disabled] { opacity:.6; }
-    .footer { color:#888; font-size:.85rem; text-align:center; margin-top:10px; }
+
+    .msg { width: min(100%, 560px); }
+    .success { background: #e6ffed; border: 1px solid #b7f5c4; padding: 12px; border-radius: 8px; }
+    .error { background: #ffecec; border: 1px solid #ffc1c1; padding: 12px; border-radius: 8px; }
+
+    button#submit {
+      width: var(--control);
+      max-width: 100%;
+      padding: 12px;
+      border: none;
+      border-radius: 10px;
+      font-size: 1rem;
+      background: #222;
+      color: #fff;
+      display: block;
+      margin: 6px auto 0;
+      cursor: pointer;
+    }
+    button#submit[disabled] { opacity: .6; cursor: default; }
+
+    .footer { color: #888; font-size: .85rem; text-align: center; margin-top: 10px; }
   </style>
 </head>
 <body>
@@ -57,36 +98,36 @@
     <fieldset>
       <legend>メニュー</legend>
 
-      <label>カレー</label>
-      <select id="curry" aria-label="カレーを選択">
+      <label for="curry">カレー</label>
+      <select id="curry" class="ctrl" aria-label="カレーを選択">
         <option value="キーマカレー" data-price="600">キーマカレー（¥600）</option>
         <option value="バターチキンカレー" data-price="600">バターチキンカレー（¥600）</option>
         <option value="ビーフカレー" data-price="600">ビーフカレー（¥600）</option>
       </select>
 
-      <label style="margin-top:10px;">ごはん</label>
-      <div class="radios" role="radiogroup" aria-label="ごはんの種類">
-        <label><input type="radio" name="rice" value="白米" checked>白米</label>
-        <label><input type="radio" name="rice" value="玄米">玄米</label>
+      <label>ごはん</label>
+      <div class="radios ctrl" role="radiogroup" aria-label="ごはんの種類">
+        <label><input type="radio" name="rice" value="白米" checked> 白米</label>
+        <label><input type="radio" name="rice" value="玄米"> 玄米</label>
       </div>
 
-      <label style="margin-top:10px;">数量</label>
-      <input id="qty" type="number" min="1" max="10" value="1" inputmode="numeric" />
-    </fieldset>
+      <label for="qty">数量</label>
+      <input id="qty" class="ctrl" type="number" min="1" max="10" value="1" inputmode="numeric" />
 
-    <div class="total">合計：<span id="total">¥600</span></div>
+      <div class="total ctrl">合計：<span id="total">¥600</span></div>
+    </fieldset>
 
     <fieldset>
       <legend>お客様情報</legend>
-      <label>お名前（必須）
-        <input id="name" type="text" placeholder="例：山田太郎" required />
-      </label>
-      <label>備考（任意）
-        <textarea id="note" rows="3" placeholder="辛さの希望・アレルギー等があれば記入してください"></textarea>
-      </label>
+
+      <label for="name">お名前（必須）</label>
+      <input id="name" class="ctrl" type="text" placeholder="例：山田太郎" required />
+
+      <label for="note">備考（任意）</label>
+      <textarea id="note" class="ctrl" rows="3" placeholder="辛さの希望・アレルギー等があれば記入してください"></textarea>
     </fieldset>
 
-    <div id="msg" aria-live="polite"></div>
+    <div id="msg" class="msg" aria-live="polite"></div>
     <button id="submit">この内容で注文する</button>
     <div class="footer">※ 通信状況により数秒かかる場合があります。送信中はボタンが無効になります。</div>
   </div>
@@ -129,12 +170,15 @@
     const name = $('#name').value.trim();
     const note = $('#note').value.trim();
 
-    if (!name) { msg.innerHTML = '<div class="error">お名前を入力してください。</div>'; return; }
+    if (!name) {
+      msg.innerHTML = '<div class="error">お名前を入力してください。</div>';
+      return;
+    }
 
     const payload = {
       name,
-      curry: curry.value,
-      rice: getRice(),
+      curry: curry.value,     // 日本語のまま送信
+      rice: getRice(),        // 日本語のまま送信
       quantity: Number(qty.value || 1),
       note
     };
@@ -143,10 +187,12 @@
       ui(true);
       const res = await fetch(GAS_ENDPOINT, {
         method: 'POST',
-        body: JSON.stringify(payload) // ← headersなし（プリフライト回避）
+        // プリフライト回避のため headers は付けない
+        body: JSON.stringify(payload)
       });
       const data = await res.json();
       if (data && data.ok) {
+        // サンクスページへ遷移
         const url = new URL('./thankyou.html', location.href);
         url.searchParams.set('order', String(data.order_id));
         url.searchParams.set('total', String(data.total || calcTotal()));

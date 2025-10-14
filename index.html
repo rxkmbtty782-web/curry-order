@@ -5,91 +5,37 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>カレー モバイルオーダー</title>
   <style>
-    :root {
-      /* 各入力欄の共通幅（カレー/数量/お名前/備考など） */
-      --control: 360px;   /* 入力 UI 幅 */
-      --fieldset: 480px;  /* メニュー/お客様情報の枠幅 */
-      --gap: 12px;
-    }
-
-    /* ページ全体の中央寄せ */
+    :root { --control: 360px; --fieldset: 480px; --gap: 12px; }
     body {
       font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans JP", sans-serif;
-      padding: 16px;
-      margin: 0 auto;
-      max-width: 840px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      background: #fff;
+      padding: 16px; margin: 0 auto; max-width: 840px;
+      display: flex; flex-direction: column; align-items: center; background: #fff;
     }
-
     h1 { font-size: 1.6rem; margin: .2rem 0 .6rem; text-align: center; }
     p.muted { color: #666; font-size: .95rem; text-align: center; margin: 0 0 8px; }
-
     .wrap { width: 100%; display: flex; flex-direction: column; align-items: center; }
-
     fieldset {
-      width: min(100%, var(--fieldset));
-      border: 1px solid #ddd;
-      border-radius: 12px;
-      padding: 20px 20px;
-      margin: 14px 0;
-      background: #fff;
+      width: min(100%, var(--fieldset)); border: 1px solid #ddd; border-radius: 12px;
+      padding: 20px; margin: 14px 0; background: #fff;
     }
-
     legend { padding: 0 6px; font-weight: 700; font-size: 1.1rem; }
     label { display: block; margin: 10px 0 6px; }
     .row { display: flex; gap: var(--gap); align-items: center; flex-wrap: wrap; }
-
-    /* 各入力欄の幅統一と中央寄せ */
-    .ctrl {
-      width: var(--control);
-      max-width: 100%;
-      display: block;
-      margin-left: auto;
-      margin-right: auto;
+    .ctrl { width: var(--control); max-width: 100%; display: block; margin: 0 auto; }
+    select.ctrl, input.ctrl, textarea.ctrl {
+      padding: 10px; border: 1px solid #ccc; border-radius: 8px; font-size: 1rem; background: #fff;
     }
-
-    select.ctrl,
-    input.ctrl,
-    textarea.ctrl {
-      padding: 10px;
-      border: 1px solid #ccc;
-      border-radius: 8px;
-      font-size: 1rem;
-      background: #fff;
-    }
-
     .radios { display: flex; flex-direction: column; gap: 6px; }
     .radios.ctrl { align-items: flex-start; }
-
-    .total.ctrl {
-      font-size: 1.2rem;
-      font-weight: 700;
-      text-align: right;
-      margin: 8px auto 0;
-    }
-
+    .total.ctrl { font-size: 1.2rem; font-weight: 700; text-align: right; margin: 8px auto 0; }
     .msg { width: min(100%, var(--fieldset)); }
     .success { background: #e6ffed; border: 1px solid #b7f5c4; padding: 12px; border-radius: 8px; }
     .error { background: #ffecec; border: 1px solid #ffc1c1; padding: 12px; border-radius: 8px; }
-
     button#submit {
-      width: var(--control);
-      max-width: 100%;
-      padding: 12px;
-      border: none;
-      border-radius: 10px;
-      font-size: 1rem;
-      background: #222;
-      color: #fff;
-      display: block;
-      margin: 8px auto 0;
-      cursor: pointer;
+      width: var(--control); max-width: 100%; padding: 12px; border: none; border-radius: 10px;
+      font-size: 1rem; background: #222; color: #fff; display: block; margin: 8px auto 0; cursor: pointer;
     }
     button#submit[disabled] { opacity: .6; cursor: default; }
-
     .footer { color: #888; font-size: .85rem; text-align: center; margin-top: 10px; }
   </style>
 </head>
@@ -115,7 +61,7 @@
       </div>
 
       <label for="qty">数量</label>
-      <!-- ★ 数量はセレクト（1〜10）に変更：スマホでの誤操作を回避 -->
+      <!-- 数量はセレクト（1〜10）で誤操作回避 -->
       <select id="qty" class="ctrl" aria-label="数量">
         <option value="1" selected>1</option>
         <option value="2">2</option><option value="3">3</option>
@@ -130,12 +76,11 @@
 
     <fieldset>
       <legend>お客様情報</legend>
-
       <label for="name">お名前（必須）</label>
       <input id="name" class="ctrl" type="text" placeholder="例：山田太郎" required />
 
       <label for="note">備考（任意）</label>
-      <textarea id="note" class="ctrl" rows="3" placeholder="アレルギー等があれば記入してください"></textarea>
+      <textarea id="note" class="ctrl" rows="3" placeholder="辛さの希望・アレルギー等があれば記入してください"></textarea>
     </fieldset>
 
     <div id="msg" class="msg" aria-live="polite"></div>
@@ -144,12 +89,12 @@
   </div>
 
 <script>
-  // ▼▼ ここに GAS の本番 URL（/exec）を貼り付け ▼▼
-  const GAS_ENDPOINT = 'https://script.google.com/macros/s/AKfycby2-qE9ACiDYx9_FC5GKPLEMxlU7rljzmEviAoTAe92l_O6-0KcRW9HcfKoPsm1J_2-rQ/exec';
+  // ★ 指定エンドポイント
+  const GAS_ENDPOINT = 'https://script.google.com/macros/s/AKfycbzhBeRBun0jGOXnxwU40NMkNfqpmkcMTAMCgFiXfhEngtEfKUnZmBP8dd0uTjH4LgWgww/exec';
 
   const $ = (sel) => document.querySelector(sel);
   const curry = $('#curry');
-  const qty   = $('#qty');     // ← select に変更
+  const qty   = $('#qty');
   const total = $('#total');
   const msg   = $('#msg');
   const submit= $('#submit');
@@ -161,13 +106,12 @@
 
   function calcTotal() {
     const price = Number(curry.selectedOptions[0].dataset.price || 600);
-    const q = Math.min(10, Math.max(1, Number(qty.value || 1))); // select の値を数値化
+    const q = Math.min(10, Math.max(1, Number(qty.value || 1)));
     total.textContent = `¥${(price * q).toLocaleString()}`;
     return price * q;
   }
-
   curry.addEventListener('change', calcTotal);
-  qty.addEventListener('change', calcTotal); // ← input ではなく change を監視
+  qty.addEventListener('change', calcTotal);
   calcTotal();
 
   function ui(loading) {
@@ -179,29 +123,24 @@
     msg.innerHTML = '';
     const name = $('#name').value.trim();
     const note = $('#note').value.trim();
-
-    if (!name) {
-      msg.innerHTML = '<div class="error">お名前を入力してください。</div>';
-      return;
-    }
+    if (!name) { msg.innerHTML = '<div class="error">お名前を入力してください。</div>'; return; }
 
     const payload = {
       name,
       curry: curry.value,
       rice: getRice(),
-      quantity: Number(qty.value || 1), // ← select の値を送信
+      quantity: Number(qty.value || 1),
       note
     };
 
     try {
       ui(true);
-      const res = await fetch(GAS_ENDPOINT, {
-        method: 'POST',
-        body: JSON.stringify(payload) // headersは付けない（プリフライト回避）
-      });
+      const res = await fetch(GAS_ENDPOINT, { method: 'POST', body: JSON.stringify(payload) });
       const data = await res.json();
       if (data && data.ok) {
-        const url = new URL('./thankyou.html', location.href);
+        // ★ 強い遷移：現在パスの末尾を thankyou.html に置換し、必ずクエリを付ける
+        const url = new URL(window.location.href);
+        url.pathname = url.pathname.replace(/[^/]*$/, 'thankyou.html');
         url.searchParams.set('order', String(data.order_id));
         url.searchParams.set('total', String(data.total || calcTotal()));
         location.assign(url.toString());
@@ -214,7 +153,6 @@
       ui(false);
     }
   }
-
   submit.addEventListener('click', sendOrder);
 </script>
 </body>

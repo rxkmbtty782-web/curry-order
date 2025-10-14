@@ -9,7 +9,7 @@
     body {
       font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans JP", sans-serif;
       padding:16px; max-width:820px; margin:0 auto;
-      display:flex; flex-direction:column; align-items:center; /* ← ページ中央寄せ */
+      display:flex; flex-direction:column; align-items:center;
     }
     h1 { font-size:1.6rem; margin:.2rem 0 .6rem; text-align:center; }
     h2 { font-size:1.2rem; margin: 16px 0 8px; text-align:center; }
@@ -27,18 +27,22 @@
     }
     .checks, .radios {
       width: min(100%, var(--control));
-      display:flex; flex-direction:column; gap:10px; /* ← 選択肢同士の行間を広げる */
+      display:flex; flex-direction:column; gap:10px;
       margin-left:auto; margin-right:auto;
     }
-    .qgroup { margin-bottom: 22px; } /* ← 質問ブロック間の余白を広げる */
+    .qgroup { margin-bottom: 24px; }
     .qtitle {
       font-weight: 700;
-      font-size: calc(1rem + 8px);  /* ← 質問タイトルを約+8pt相当大きく */
+      font-size: calc(1rem + 8px);
       line-height: 1.5;
-      margin: 10px auto 6px;
+      margin: 10px auto 10px;
       width: min(100%, var(--control));
     }
-    .qdesc { width:min(100%, var(--control)); margin: 0 auto 6px; color:#666; }
+    .scale { width:min(100%, var(--control)); margin: 6px auto 12px; }
+    .scale .row { display:flex; justify-content:space-between; gap:6px; }
+    .scale .row label { flex:1; text-align:center; border:1px solid #ccc; border-radius:8px; padding:6px 0; cursor:pointer; }
+    .scale input[type="radio"] { display:none; }
+    .scale input[type="radio"]:checked + span { font-weight:700; }
     .small { font-size:.9rem; color:#666; }
     .success { background:#e6ffed; border:1px solid #b7f5c4; padding:12px; border-radius:8px; }
     .error { background:#ffecec; border:1px solid #ffc1c1; padding:12px; border-radius:8px; }
@@ -64,10 +68,9 @@
   <form id="survey" class="box">
     <input type="hidden" name="order" id="orderInput" />
 
+    <!-- ① 基本属性 -->
     <div class="qgroup">
-      <div class="qtitle">① カレー容器に関するアンケート</div>
-
-      <label class="qtitle">性別</label>
+      <div class="qtitle">性別</div>
       <div class="radios">
         <label><input type="radio" name="gender" value="男性">男性</label>
         <label><input type="radio" name="gender" value="女性">女性</label>
@@ -85,46 +88,11 @@
         <option value="50代">50代</option>
         <option value="60代以上">60代以上</option>
       </select>
-
-      <label class="qtitle">容器の機能性で良かった点（複数選択可）</label>
-      <div class="checks">
-        <label><input type="checkbox" name="good_function" value="ご飯とルーを分けられる二層構造">ご飯とルーを分けられる二層構造</label>
-        <label><input type="checkbox" name="good_function" value="蓋の開けやすさ">蓋の開けやすさ</label>
-        <label><input type="checkbox" name="good_function" value="カレーがこぼれにくい安定性">カレーがこぼれにくい安定性</label>
-        <label><input type="checkbox" name="good_function" value="容器の大きさ">容器の大きさ</label>
-        <label><input type="checkbox" name="good_function" value="鞄に入れやすいか">鞄に入れやすいか</label>
-      </div>
-
-      <label class="qtitle">容器の機能性であまり良くなかった点（複数選択可）</label>
-      <div class="checks">
-        <label><input type="checkbox" name="bad_function" value="蓋の開けにくさ">蓋の開けにくさ</label>
-        <label><input type="checkbox" name="bad_function" value="容器が大きすぎる">容器が大きすぎる</label>
-        <label><input type="checkbox" name="bad_function" value="容器が小さすぎる">容器が小さすぎる</label>
-        <label><input type="checkbox" name="bad_function" value="持ち運びに不便">持ち運びに不便</label>
-        <label><input type="checkbox" name="bad_function" value="安定性に欠ける">安定性に欠ける</label>
-      </div>
-
-      <label class="qtitle">容器のデザイン性で良かった点（複数選択可）</label>
-      <div class="checks">
-        <label><input type="checkbox" name="good_design" value="食欲をそそる色味や形">食欲をそそる色味や形</label>
-        <label><input type="checkbox" name="good_design" value="黄色がよかった">黄色がよかった</label>
-        <label><input type="checkbox" name="good_design" value="ホワイトがよかった">ホワイトがよかった</label>
-      </div>
-
-      <label class="qtitle">容器のデザイン性であまり良くなかった点（複数選択可）</label>
-      <div class="checks">
-        <label><input type="checkbox" name="bad_design" value="容器の色味">容器の色味</label>
-        <label><input type="checkbox" name="bad_design" value="形">形</label>
-      </div>
-
-      <label class="qtitle">その他 容器についての意見・感想（自由記述）</label>
-      <textarea name="container_free" rows="3" placeholder="自由にお書きください"></textarea>
     </div>
 
+    <!-- ② カレー販売に関する項目 -->
     <div class="qgroup">
-      <div class="qtitle">② カレー販売に関するアンケート</div>
-
-      <label class="qtitle">カレーを購入した理由（単一選択）</label>
+      <div class="qtitle">カレーを購入した理由（単一選択）</div>
       <div class="radios">
         <label><input type="radio" name="reason" value="カレーが食べたかった" checked>カレーが食べたかった</label>
         <label><input type="radio" name="reason" value="知り合いに勧められた">知り合いに勧められた</label>
@@ -148,19 +116,35 @@
         <label><input type="radio" name="purchase_type" value="モバイルオーダー" checked>モバイルオーダー</label>
         <label><input type="radio" name="purchase_type" value="店頭販売">店頭販売</label>
       </div>
-
-      <label class="qtitle">その他 意見・感想（自由記述）</label>
-      <textarea name="sales_free" rows="3" placeholder="自由にお書きください"></textarea>
     </div>
 
+    <!-- ③ 容器の機能性：1〜5 -->
     <div class="qgroup">
-      <div class="qtitle">③ 広告に関するアンケート</div>
+      <div class="qtitle">容器の機能性について（1：全くそう思わない〜5：非常にそう思う）</div>
 
-      <label class="qtitle">販売を知ったきっかけ</label>
+      <!-- 繰り返し構造 -->
+      <div class="scale" id="funcGroup"></div>
+    </div>
+
+    <!-- ④ デザイン性：1〜5 -->
+    <div class="qgroup">
+      <div class="qtitle">容器のデザイン性について（1：全くそう思わない〜5：非常にそう思う）</div>
+      <div class="scale" id="designGroup"></div>
+
+      <label class="qtitle">その他 容器についての意見・感想（自由記述）</label>
+      <textarea name="container_free" rows="3" placeholder="自由にお書きください"></textarea>
+    </div>
+
+    <!-- ⑤ 広告・認知 -->
+    <div class="qgroup">
+      <div class="qtitle">販売を知ったきっかけ</div>
       <div class="radios">
         <label><input type="radio" name="discover" value="SNSでの広告" checked>SNSでの広告</label>
         <label><input type="radio" name="discover" value="店頭のPOP">店頭のPOP</label>
       </div>
+
+      <label class="qtitle">その他 販売に関する意見・感想（自由記述）</label>
+      <textarea name="sales_free" rows="3" placeholder="自由にお書きください"></textarea>
     </div>
 
     <div id="msg"></div>
@@ -169,7 +153,6 @@
   </form>
 
 <script>
-  // ▼▼ ここに GAS の本番 URL（/exec）を貼り付け ▼▼
   const GAS_ENDPOINT = 'https://script.google.com/macros/s/AKfycby2-qE9ACiDYx9_FC5GKPLEMxlU7rljzmEviAoTAe92l_O6-0KcRW9HcfKoPsm1J_2-rQ/exec';
 
   const params = new URLSearchParams(location.search);
@@ -184,7 +167,43 @@
   const msg = document.getElementById('msg');
   const submitBtn = document.getElementById('submit');
 
-  // 初期表示
+  // 動的にスケールUI生成
+  const funcItems = [
+    ['func_sep', 'ご飯とルーを分けられる二層構造'],
+    ['func_stack', '容器が重ねられる（スタッカブル）'],
+    ['func_lid', '蓋の開けやすさ'],
+    ['func_stable', 'カレーがこぼれにくい安定性'],
+    ['func_size', '容器の大きさ（適切さ）'],
+    ['func_seal', '密閉性（漏れにくさ）'],
+    ['func_mw', '電子レンジで温められる利便性'],
+    ['func_bag', 'カバンに入れやすいか']
+  ];
+  const designItems = [
+    ['design_color', '色味が食欲をそそる'],
+    ['design_shape', '形が持ちやすい・見た目が良い'],
+    ['design_influence', 'デザインは購入意欲に影響した']
+  ];
+
+  function createScaleRow(name, labelText) {
+    const div = document.createElement('div');
+    div.className = 'scale';
+    div.innerHTML = `
+      <div>${labelText}</div>
+      <div class="row">
+        ${[1,2,3,4,5].map(n => `
+          <label><input type="radio" name="${name}" value="${n}" ${n===3?'checked':''}><span>${n}</span></label>
+        `).join('')}
+      </div>`;
+    return div;
+  }
+
+  const funcGroup = document.getElementById('funcGroup');
+  funcItems.forEach(([name, text]) => funcGroup.appendChild(createScaleRow(name, text)));
+
+  const designGroup = document.getElementById('designGroup');
+  designItems.forEach(([name, text]) => designGroup.appendChild(createScaleRow(name, text)));
+
+  // 注文情報表示
   if (!order || isNaN(order)) {
     state.style.display = 'block';
     state.innerHTML = '<div class="error">注文情報を取得できませんでした。最初からやり直してください。</div>';
@@ -195,9 +214,6 @@
     orderInput.value = String(order);
   }
 
-  function getCheckedValues(name) {
-    return [...document.querySelectorAll(`input[name="${name}"]:checked`)].map(el => el.value);
-  }
   function getRadioValue(name) {
     const el = document.querySelector(`input[name="${name}"]:checked`);
     return el ? el.value : '';
@@ -215,32 +231,22 @@
     const payload = {
       mode: 'survey',
       order: Number(orderInput.value),
-
       gender: getRadioValue('gender'),
       age_range: document.querySelector('select[name="age_range"]').value,
-
-      good_function: getCheckedValues('good_function'),
-      bad_function:  getCheckedValues('bad_function'),
-      good_design:   getCheckedValues('good_design'),
-      bad_design:    getCheckedValues('bad_design'),
-
-      container_free: (document.querySelector('textarea[name="container_free"]').value || '').trim(),
-
       reason: getRadioValue('reason'),
       price_eval: document.querySelector('select[name="price_eval"]').value,
       purchase_type: getRadioValue('purchase_type'),
       discover: getRadioValue('discover'),
-      sales_free: (document.querySelector('textarea[name="sales_free"]').value || '').trim()
+      sales_free: (document.querySelector('textarea[name="sales_free"]').value || '').trim(),
+      container_free: (document.querySelector('textarea[name="container_free"]').value || '').trim()
     };
+    // 機能性/デザイン性
+    [...funcItems, ...designItems].forEach(([name]) => payload[name] = getRadioValue(name));
 
     try {
       submitBtn.disabled = true;
       submitBtn.textContent = '送信中…';
-
-      const res = await fetch(GAS_ENDPOINT, {
-        method: 'POST',
-        body: JSON.stringify(payload) // ← headersなし（プリフライト回避）
-      });
+      const res = await fetch(GAS_ENDPOINT, { method:'POST', body: JSON.stringify(payload) });
       const data = await res.json();
 
       if (data && data.ok) {

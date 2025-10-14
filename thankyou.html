@@ -32,10 +32,8 @@
     }
     .qgroup { margin-bottom: 24px; }
     .qtitle {
-      font-weight: 700;
-      font-size: calc(1rem + 8px);
-      line-height: 1.5;
-      margin: 10px auto 10px;
+      font-weight: 700; font-size: calc(1rem + 8px);
+      line-height: 1.5; margin: 10px auto 10px;
       width: min(100%, var(--control));
     }
     .scale { width:min(100%, var(--control)); margin: 6px auto 12px; }
@@ -46,13 +44,10 @@
       background:#fff; color:#333;
     }
     .scale input[type="radio"] { display:none; }
-    /* ★選択時：青く光る（SNSの選択色に近いトーン） */
     .scale input[type="radio"]:checked + span {
       display:inline-block; width:100%; height:100%;
-      background: var(--accent); color:#fff; border-radius:8px;
-      box-shadow: 0 0 4px var(--accent);
+      background: var(--accent); color:#fff; border-radius:8px; box-shadow: 0 0 4px var(--accent);
     }
-
     .small { font-size:.9rem; color:#666; }
     .success { background:#e6ffed; border:1px solid #b7f5c4; padding:12px; border-radius:8px; }
     .error { background:#ffecec; border:1px solid #ffc1c1; padding:12px; border-radius:8px; }
@@ -78,7 +73,7 @@
   <form id="survey" class="box">
     <input type="hidden" name="order" id="orderInput" />
 
-    <!-- ① 基本属性 -->
+    <!-- 基本属性 -->
     <div class="qgroup">
       <div class="qtitle">性別</div>
       <div class="radios">
@@ -100,16 +95,15 @@
       </select>
     </div>
 
-    <!-- ② カレー販売（理由・価格・購入形態・認知・自由記述） -->
+    <!-- 販売関連 -->
     <div class="qgroup">
-      <div class="qtitle">カレーを購入した理由（単一選択）</div>
+      <div class="qtitle">カレーを購入した理由</div>
       <div class="radios">
         <label><input type="radio" name="reason" value="カレーが食べたかった" checked>カレーが食べたかった</label>
         <label><input type="radio" name="reason" value="知り合いに勧められた">知り合いに勧められた</label>
         <label><input type="radio" name="reason" value="容器が魅力的だった">容器が魅力的だった</label>
         <label><input type="radio" name="reason" value="店頭で目に止まった">店頭で目に止まった</label>
         <label><input type="radio" name="reason" value="差し入れでもらった">差し入れでもらった</label>
-        <label><input type="radio" name="reason" value="その他">その他</label>
       </div>
 
       <label class="qtitle">価格について</label>
@@ -120,30 +114,24 @@
         <option value="少し高い">少し高い</option>
         <option value="非常に高い">非常に高い</option>
       </select>
-
-      <label class="qtitle">購入形態</label>
-      <div class="radios">
-        <label><input type="radio" name="purchase_type" value="モバイルオーダー" checked>モバイルオーダー</label>
-        <label><input type="radio" name="purchase_type" value="店頭販売">店頭販売</label>
-      </div>
     </div>
 
-    <!-- ③ 機能性（1〜5） -->
+    <!-- 機能性（1〜5） -->
     <div class="qgroup">
-      <div class="qtitle">容器の機能性について（1：全くそう思わない〜5：非常にそう思う）</div>
+      <div class="qtitle">容器の機能性（1〜5）</div>
       <div id="funcGroup"></div>
     </div>
 
-    <!-- ④ デザイン性（1〜5）＋自由記述 -->
+    <!-- デザイン性（1〜5） -->
     <div class="qgroup">
-      <div class="qtitle">容器のデザイン性について（1：全くそう思わない〜5：非常にそう思う）</div>
+      <div class="qtitle">容器のデザイン性（1〜5）</div>
       <div id="designGroup"></div>
 
-      <label class="qtitle">その他 容器についての意見・感想（自由記述）</label>
+      <label class="qtitle">その他 ご意見</label>
       <textarea name="container_free" rows="3" placeholder="自由にお書きください"></textarea>
     </div>
 
-    <!-- ⑤ 認知 ＋ 自由記述 -->
+    <!-- 認知 -->
     <div class="qgroup">
       <div class="qtitle">販売を知ったきっかけ</div>
       <div class="radios">
@@ -151,7 +139,7 @@
         <label><input type="radio" name="discover" value="店頭のPOP">店頭のPOP</label>
       </div>
 
-      <label class="qtitle">その他 販売に関する意見・感想（自由記述）</label>
+      <label class="qtitle">その他のご意見</label>
       <textarea name="sales_free" rows="3" placeholder="自由にお書きください"></textarea>
     </div>
 
@@ -161,22 +149,31 @@
   </form>
 
 <script>
-  // ★ 指定のエンドポイント
+  // ★ 新しいエンドポイント
   const GAS_ENDPOINT = 'https://script.google.com/macros/s/AKfycbzhBeRBun0jGOXnxwU40NMkNfqpmkcMTAMCgFiXfhEngtEfKUnZmBP8dd0uTjH4LgWgww/exec';
 
-  // 注文情報
-  const params = new URLSearchParams(location.search);
-  const order = Number(params.get('order') || '');
-  const total = Number(params.get('total') || '');
+  // 注文情報の受け取り
+  const params   = new URLSearchParams(location.search);
+  const orderRaw = params.get('order');
+  const totalRaw = params.get('total');
   const orderEl = document.getElementById('order');
   const totalEl = document.getElementById('total');
   const orderInput = document.getElementById('orderInput');
-  const state = document.getElementById('state');
-  const form = document.getElementById('survey');
   const msg = document.getElementById('msg');
   const submitBtn = document.getElementById('submit');
+  const form = document.getElementById('survey');
 
-  // スケール項目
+  if (orderRaw) {
+    orderEl.textContent = orderRaw;
+    totalEl.textContent = totalRaw ? `¥${Number(totalRaw).toLocaleString()}` : '-';
+    orderInput.value = orderRaw;
+  } else {
+    document.getElementById('state').style.display = 'block';
+    document.getElementById('state').innerHTML = '<div class="error">注文情報を取得できませんでした。</div>';
+    form.style.display = 'none';
+  }
+
+  // スケール質問の作成
   const funcItems = [
     ['func_sep', 'ご飯とルーを分けられる二層構造'],
     ['func_stack', '容器が重ねられる（スタッカブル）'],
@@ -192,8 +189,6 @@
     ['design_shape', '形が持ちやすい・見た目が良い'],
     ['design_influence', 'デザインは購入意欲に影響した']
   ];
-
-  // スケールUI生成
   function createScaleRow(name, labelText) {
     const div = document.createElement('div');
     div.className = 'scale';
@@ -206,96 +201,59 @@
       </div>`;
     return div;
   }
-  const funcGroup = document.getElementById('funcGroup');
-  funcItems.forEach(([name, text]) => funcGroup.appendChild(createScaleRow(name, text)));
-  const designGroup = document.getElementById('designGroup');
-  designItems.forEach(([name, text]) => designGroup.appendChild(createScaleRow(name, text)));
+  funcItems.forEach(([n,t]) => document.getElementById('funcGroup').appendChild(createScaleRow(n,t)));
+  designItems.forEach(([n,t]) => document.getElementById('designGroup').appendChild(createScaleRow(n,t)));
 
-  // 注文情報表示
-  if (!order || isNaN(order)) {
-    state.style.display = 'block';
-    state.innerHTML = '<div class="error">注文情報を取得できませんでした。最初からやり直してください。</div>';
-    form.style.display = 'none';
-  } else {
-    orderEl.textContent = String(order);
-    totalEl.textContent = `¥${(isNaN(total) ? 0 : total).toLocaleString()}`;
-    orderInput.value = String(order);
-  }
+  // 送信処理
+  function getRadioValue(name){ const el=document.querySelector(`input[name="${name}"]:checked`);return el?el.value:''; }
 
-  function getRadioValue(name) {
-    const el = document.querySelector(`input[name="${name}"]:checked`);
-    return el ? el.value : '';
-  }
+  form.addEventListener('submit', async (e)=>{
+    e.preventDefault();
+    msg.innerHTML='';
+    if(!orderInput.value){ msg.innerHTML='<div class="error">注文番号が不正です。</div>'; return; }
 
-  // ★ 送信処理（保存＆完了表示）
-  form.addEventListener('submit', async (ev) => {
-    ev.preventDefault();
-    msg.innerHTML = '';
-
-    if (!orderInput.value) {
-      msg.innerHTML = '<div class="error">注文番号が不正です。</div>';
-      return;
-    }
-
-    const payload = {
-      mode: 'survey',
-      order: Number(orderInput.value),
-
-      gender: getRadioValue('gender'),
-      age_range: document.querySelector('select[name="age_range"]').value,
-
-      // 販売
-      reason: getRadioValue('reason'),
-      price_eval: document.querySelector('select[name="price_eval"]').value,
-      purchase_type: getRadioValue('purchase_type'),
-
-      // 機能性・デザイン性（1〜5）
-      func_sep: getRadioValue('func_sep'),
-      func_stack: getRadioValue('func_stack'),
-      func_lid: getRadioValue('func_lid'),
-      func_stable: getRadioValue('func_stable'),
-      func_size: getRadioValue('func_size'),
-      func_seal: getRadioValue('func_seal'),
-      func_mw: getRadioValue('func_mw'),
-      func_bag: getRadioValue('func_bag'),
-
-      design_color: getRadioValue('design_color'),
-      design_shape: getRadioValue('design_shape'),
-      design_influence: getRadioValue('design_influence'),
-
-      // 認知・自由記述
-      discover: getRadioValue('discover'),
-      container_free: (document.querySelector('textarea[name="container_free"]')?.value || '').trim(),
-      sales_free: (document.querySelector('textarea[name="sales_free"]')?.value || '').trim()
+    const payload={
+      mode:'survey',
+      order:Number(orderInput.value),
+      gender:getRadioValue('gender'),
+      age_range:document.querySelector('select[name="age_range"]').value,
+      reason:getRadioValue('reason'),
+      price_eval:document.querySelector('select[name="price_eval"]').value,
+      purchase_type:getRadioValue('purchase_type'),
+      func_sep:getRadioValue('func_sep'),
+      func_stack:getRadioValue('func_stack'),
+      func_lid:getRadioValue('func_lid'),
+      func_stable:getRadioValue('func_stable'),
+      func_size:getRadioValue('func_size'),
+      func_seal:getRadioValue('func_seal'),
+      func_mw:getRadioValue('func_mw'),
+      func_bag:getRadioValue('func_bag'),
+      design_color:getRadioValue('design_color'),
+      design_shape:getRadioValue('design_shape'),
+      design_influence:getRadioValue('design_influence'),
+      discover:getRadioValue('discover'),
+      container_free:(document.querySelector('textarea[name="container_free"]')?.value||'').trim(),
+      sales_free:(document.querySelector('textarea[name="sales_free"]')?.value||'').trim()
     };
 
-    try {
-      submitBtn.disabled = true;
-      submitBtn.textContent = '送信中…';
-
-      const res = await fetch(GAS_ENDPOINT, {
-        method: 'POST',
-        body: JSON.stringify(payload) // ← headersなし（プリフライト回避）
-      });
-      const data = await res.json();
-
-      if (data && data.ok) {
-        msg.innerHTML = '<div class="success">ご回答ありがとうございました！</div>';
-        submitBtn.disabled = true;
-        submitBtn.textContent = '送信済み';
-        form.querySelectorAll('input,select,textarea').forEach(el => el.disabled = true);
-      } else if (data && data.error === 'already_submitted') {
-        msg.innerHTML = '<div class="error">この注文番号ではすでに回答済みです。ご協力ありがとうございました。</div>';
-        submitBtn.disabled = true;
-        submitBtn.textContent = '送信済み';
-        form.querySelectorAll('input,select,textarea').forEach(el => el.disabled = true);
-      } else {
-        throw new Error(data && data.error ? data.error : 'unknown error');
+    try{
+      submitBtn.disabled=true; submitBtn.textContent='送信中…';
+      const res=await fetch(GAS_ENDPOINT,{method:'POST',body:JSON.stringify(payload)});
+      const data=await res.json();
+      if(data&&data.ok){
+        msg.innerHTML='<div class="success">ご回答ありがとうございました！</div>';
+        submitBtn.disabled=true; submitBtn.textContent='送信済み';
+        form.querySelectorAll('input,select,textarea').forEach(el=>el.disabled=true);
+      }else if(data&&data.error==='already_submitted'){
+        msg.innerHTML='<div class="error">この注文番号ではすでに回答済みです。</div>';
+        submitBtn.disabled=true; submitBtn.textContent='送信済み';
+        form.querySelectorAll('input,select,textarea').forEach(el=>el.disabled=true);
+      }else{
+        throw new Error(data&&data.error?data.error:'unknown error');
       }
-    } catch (err) {
-      msg.innerHTML = `<div class="error">送信に失敗しました：${String(err.message || err)}</div>`;
-      submitBtn.disabled = false;
-      submitBtn.textContent = 'アンケートを送信する';
+    }catch(err){
+      msg.innerHTML=`<div class="error">送信に失敗しました：${String(err.message||err)}</div>`;
+      submitBtn.disabled=false; submitBtn.textContent='アンケートを送信する';
     }
   });
 </script>

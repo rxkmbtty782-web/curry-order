@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>番号札表示（受取可）</title>
+  <style>
+    :root { --accent:#1a73e8; }
+    body {
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans JP", sans-serif;
+      margin: 0; padding: 16px; background:#fff; color:#111;
+      display:flex; flex-direction:column; align-items:center;
+    }
+    h1 { margin: 6px 0 10px; font-size: 1.4rem; text-align:center; }
+    .time { color:#666; margin-bottom: 12px; }
+    .now {
+      font-size: clamp(48px, 12vw, 140px);
+      font-weight: 900;
+      color: var(--accent);
+      line-height: 1.0;
+      letter-spacing: .04em;
+      border: 4px solid var(--accent);
+      border-radius: 16px;
+      padding: 12px 24px;
+      margin: 10px 0 14px;
+      min-width: 60%;
+      text-align: center;
+    }
+    .list {
+      display:flex; flex-wrap:wrap; gap:12px; justify-content:center;
+      max-width: 1000px;
+    }
+    .pill {
+      border: 2px solid #ddd; border-radius: 999px; padding: 10px 18px;
+      font-size: clamp(20px, 4vw, 36px); font-weight: 700;
+      background:#f7f7f7;
+    }
+    .muted { color:#666; }
+  </style>
+</head>
+<body>
+  <h1>出来上がり番号（受け取りにお越しください）</h1>
+  <div class="time" id="time">更新: -</div>
+  <div class="now" id="now">--</div>
+  <div class="list" id="list"></div>
+  <p class="muted">画面は自動更新されます。</p>
+
+<script>
+const GAS_ENDPOINT = 'https://script.google.com/macros/s/AKfycbzhBeRBun0jGOXnxwU40NMkNfqpmkcMTAMCgFiXfhEngtEfKUnZmBP8dd0uTjH4LgWgww/exec';
+
+async function load() {
+  try{
+    // GETでも取得可能（プリフライト回避のためヘッダ指定なし）
+    const url = `${GAS_ENDPOINT}?mode=status&action=list`;
+    const res = await fetch(url, { method:'GET' });
+    const data = await res.json();
+    const ready = Array.isArray(data.ready) ? data.ready : [];
+
+    // 一番小さい番号を特大表示、それ以外は下に並べる
+    const now = ready.length ? ready[0] : '--';
+    document.getElementById('now').textContent = now;
+
+    const listEl = document.getElementById('list');
+    listEl.innerHTML = '';
+    ready.slice(1).forEach(n=>{
+      const div = document.createElement('div');
+      div.className = 'pill';
+      div.textContent = n;
+      listEl.appendChild(div);
+    });
+
+    document.getElementById('time').textContent = '更新: ' + new Date().toLocaleTimeString();
+  }catch(e){
+    // 失敗時は何もしない（次回ポーリングで復帰）
+  }
+}
+load();
+// 3秒ごと自動更新（混雑時は5秒などに変更可）
+setInterval(load, 3000);
+</script>
+</body>
+</html>

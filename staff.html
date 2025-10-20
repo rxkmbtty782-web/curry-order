@@ -21,12 +21,14 @@
       padding: 12px 16px; border:none; border-radius:10px; font-size:1.0rem; cursor:pointer;
       background:#111; color:#fff;
     }
-    .green { background:#1a73e8; } /* 受取可にする */
-    .gray  { background:#666; }     /* 受渡済にする */
+    .green { background:#1a73e8; }
+    .gray  { background:#666; }
     .box { border:1px solid #ddd; border-radius:12px; padding:12px; margin-top:14px; width:min(100%, 720px); }
     .list { display:flex; flex-wrap:wrap; gap:10px; }
     .pill { border:2px solid #ddd; border-radius:999px; padding:8px 14px; background:#f7f7f7; font-weight:700; }
-    .msg { margin-top: 8px; color:#333; }
+    .msg { margin-top: 8px; color:#333; white-space:pre-wrap; }
+    .small { color:#666; font-size:.9rem; }
+    .log { font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; background:#f8f9fa; border:1px solid #e2e3e5; border-radius:8px; padding:8px; margin-top:8px; max-width:720px; width:100%; overflow:auto; }
   </style>
 </head>
 <body>
@@ -40,35 +42,49 @@
     <button class="gray"  onclick="mark('done')">受け渡し済みにする</button>
   </div>
   <div class="msg" id="msg"></div>
+  <div class="log" id="log" style="display:none;"></div>
 
   <div class="box">
     <strong>現在の『受取可』番号</strong>
     <div id="list" class="list" style="margin-top:8px;"></div>
-    <button style="margin-top:10px;" onclick="refresh()">更新</button>
+    <div class="row" style="margin-top:10px;">
+      <button onclick="refresh()">更新</button>
+      <button onclick="diag()">接続テスト＆診断</button>
+    </div>
+    <p class="small">※ 失敗時は診断を押すと、原因候補と列状況が表示されます。</p>
   </div>
 
 <script>
-const GAS_ENDPOINT = 'https://script.google.com/macros/s/AKfycbyeWkMMyRzZsv9d0x11eMRH6Mal2ZlM-q8sWSh8OKa0DpKGfH-KbhYxj3tX-Y9ft4QA/exec';
+const GAS_ENDPOINT = 'https://script.google.com/macros/s/AKfycbzhBeRBun0jGOXnxwU40NMkNfqpmkcMTAMCgFiXfhEngtEfKUnZmBP8dd0uTjH4LgWgww/exec';
+
+function showMsg(t){ const m=document.getElementById('msg'); m.textContent=t; }
+function showLog(obj){
+  const el=document.getElementById('log');
+  el.style.display='block';
+  el.textContent = typeof obj==='string' ? obj : JSON.stringify(obj, null, 2);
+}
+function validNumber(n){ return Number.isFinite(n) && n>0 && Number.isInteger(n); }
 
 async function mark(type){
   const num = Number(document.getElementById('num').value || 0);
-  const msg = document.getElementById('msg');
-  msg.textContent = '';
-  if(!num){ msg.textContent = '番号を入力してください'; return; }
+  showMsg(''); document.getElementById('log').style.display='none';
+  if(!validNumber(num)){ showMsg('番号を正の整数で入力してください'); return; }
 
   try{
     const body = { mode:'status', action: type, order: num };
     const res = await fetch(GAS_ENDPOINT, { method:'POST', body: JSON.stringify(body) });
     const data = await res.json();
+    showLog(data);
     if(data && data.ok){
-      msg.textContent = (type==='ready') ? `番号 ${num} を『受取可』にしました` : `番号 ${num} を『受渡済』にしました`;
+      showMsg((type==='ready') ? `番号 ${num} を『受取可』にしました` : `番号 ${num} を『受渡済』にしました`);
       document.getElementById('num').value = '';
       refresh();
     }else{
-      msg.textContent = `失敗: ${data && data.error ? data.error : 'unknown error'}`;
+      showMsg(`失敗: ${data && data.error ? data.error : 'unknown error'}`);
     }
   }catch(e){
-    msg.textContent = '通信エラー: ' + String(e.message || e);
+    showMsg('通信エラー: ' + String(e.message || e));
+    showLog(String(e));
   }
 }
 
@@ -87,9 +103,34 @@ async function refresh(){
       list.appendChild(d);
     });
   }catch(e){
-    // noop
+    showMsg('一覧取得エラー: ' + String(e.message || e));
+    showLog(String(e));
   }
 }
+
+async function diag(){
+  try{
+    const url = `${GAS_ENDPOINT}?mode=status&action=diag`;
+    const res = await fetch(url, { method:'GET' });
+    const data = await res.json();
+    showLog(data);
+    if(data && data.ok){
+      const d = data.diag || {};
+      const adv = [];
+      if(!d.colOrder || d.colOrder < 1) adv.push('Orders に「注文番号」ヘッダがありません。1行目ヘッダを確認。');
+      if(!d.colStatus || d.colStatus < 1) adv.push('Orders に「状態」ヘッダがありません。Code.gsのヘッダ更新後、再デプロイ済みか確認。');
+      if((d.lastRow||0) < 2) adv.push('注文データがまだありません（先に注文を1件登録）。');
+      showMsg(adv.length ? adv.join(' / ') : '診断OK：列とデータは検出されました。番号操作をお試しください。');
+    }else{
+      showMsg(`診断失敗: ${data && data.error ? data.error : 'unknown error'}`);
+    }
+  }catch(e){
+    showMsg('診断エラー: ' + String(e.message || e));
+    showLog(String(e));
+  }
+}
+
+// 初期ロード
 refresh();
 </script>
 </body>

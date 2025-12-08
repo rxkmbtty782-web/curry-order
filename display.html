@@ -27,13 +27,11 @@
       text-align: center;
     }
     .list {
-      display:flex; flex-wrap:wrap; gap:12px; justify-content:center;
-      max-width: 1000px;
+      display:flex; flex-wrap:wrap; gap:12px; justify-content:center; max-width: 1000px;
     }
     .pill {
       border: 2px solid #ddd; border-radius: 999px; padding: 10px 18px;
-      font-size: clamp(20px, 4vw, 36px); font-weight: 700;
-      background:#f7f7f7;
+      font-size: clamp(20px, 4vw, 36px); font-weight: 700; background:#f7f7f7;
     }
     .muted { color:#666; }
   </style>
@@ -46,11 +44,10 @@
   <p class="muted">画面は自動更新されます。</p>
 
 <script>
-const GAS_ENDPOINT = 'https://script.google.com/macros/s/AKfycbzwKJTh1kPfq3m-b-uUvJC88WPHoIhMWXq8r0NV-iOvb82I4nl4fJet4QVsnKsJyW8yug/exec';
+const GAS_ENDPOINT = 'https://script.google.com/macros/s/AKfycbyMCmt_rlgeAII-qzD3e8g1u6We5lgrcWmFs113mgkZFg6Nyx8LZyR5zgpHZq7j3BxLYA/exec';
 
 async function load() {
   try{
-    // GETでも取得可能（プリフライト回避のためヘッダ指定なし）
     const url = `${GAS_ENDPOINT}?mode=status&action=list`;
     const res = await fetch(url, { method:'GET' });
     const data = await res.json();
@@ -71,11 +68,10 @@ async function load() {
 
     document.getElementById('time').textContent = '更新: ' + new Date().toLocaleTimeString();
   }catch(e){
-    // 失敗時は何もしない（次回ポーリングで復帰）
+    // 失敗時は無視（次回ポーリングで復帰）
   }
 }
 load();
-// 3秒ごと自動更新（混雑時は5秒などに変更可）
 setInterval(load, 3000);
 </script>
 </body>

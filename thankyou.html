@@ -149,8 +149,7 @@
   </form>
 
 <script>
-  // ★ 新しいエンドポイント
-  const GAS_ENDPOINT = 'https://script.google.com/macros/s/AKfycbzwKJTh1kPfq3m-b-uUvJC88WPHoIhMWXq8r0NV-iOvb82I4nl4fJet4QVsnKsJyW8yug/exec';
+  const GAS_ENDPOINT = 'https://script.google.com/macros/s/AKfycbyMCmt_rlgeAII-qzD3e8g1u6We5lgrcWmFs113mgkZFg6Nyx8LZyR5zgpHZq7j3BxLYA/exec';
 
   // 注文情報の受け取り
   const params   = new URLSearchParams(location.search);
@@ -204,7 +203,6 @@
   funcItems.forEach(([n,t]) => document.getElementById('funcGroup').appendChild(createScaleRow(n,t)));
   designItems.forEach(([n,t]) => document.getElementById('designGroup').appendChild(createScaleRow(n,t)));
 
-  // 送信処理
   function getRadioValue(name){ const el=document.querySelector(`input[name="${name}"]:checked`);return el?el.value:''; }
 
   form.addEventListener('submit', async (e)=>{
@@ -219,7 +217,6 @@
       age_range:document.querySelector('select[name="age_range"]').value,
       reason:getRadioValue('reason'),
       price_eval:document.querySelector('select[name="price_eval"]').value,
-      purchase_type:getRadioValue('purchase_type'),
       func_sep:getRadioValue('func_sep'),
       func_stack:getRadioValue('func_stack'),
       func_lid:getRadioValue('func_lid'),

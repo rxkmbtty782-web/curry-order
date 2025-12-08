@@ -55,7 +55,7 @@
   </div>
 
 <script>
-const GAS_ENDPOINT = 'https://script.google.com/macros/s/AKfycbzwKJTh1kPfq3m-b-uUvJC88WPHoIhMWXq8r0NV-iOvb82I4nl4fJet4QVsnKsJyW8yug/exec';
+const GAS_ENDPOINT = 'https://script.google.com/macros/s/AKfycbyMCmt_rlgeAII-qzD3e8g1u6We5lgrcWmFs113mgkZFg6Nyx8LZyR5zgpHZq7j3BxLYA/exec';
 
 function showMsg(t){ const m=document.getElementById('msg'); m.textContent=t; }
 function showLog(obj){
@@ -118,7 +118,7 @@ async function diag(){
       const d = data.diag || {};
       const adv = [];
       if(!d.colOrder || d.colOrder < 1) adv.push('Orders に「注文番号」ヘッダがありません。1行目ヘッダを確認。');
-      if(!d.colStatus || d.colStatus < 1) adv.push('Orders に「状態」ヘッダがありません。Code.gsのヘッダ更新後、再デプロイ済みか確認。');
+      if(!d.colStatus || d.colStatus < 1) adv.push('Orders に「状態」ヘッダがありません。Code.js の ORDER_HEADERS を再確認。');
       if((d.lastRow||0) < 2) adv.push('注文データがまだありません（先に注文を1件登録）。');
       showMsg(adv.length ? adv.join(' / ') : '診断OK：列とデータは検出されました。番号操作をお試しください。');
     }else{
